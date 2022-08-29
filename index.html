@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Clickstream JSON Generator</title>
+    <style>
+      html,
+      body {
+        margin: 1rem;
+        background-color: #010203;
+        color: white;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      html {
+        display: flex;
+        justify-content: center;
+      }
+
+      body {
+        padding: 1rem;
+        width: fit-content;
+      }
+
+      h1 {
+        margin: 1rem;
+        text-transform: uppercase;
+        font-size: 1.9rem;
+      }
+
+      p {
+        margin: 1rem;
+        width: 500px;
+        line-height: 1.4rem;
+      }
+
+      #dataEntryForm {
+        margin: 1rem;
+        font-size: 1.3rem;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .inputLabel {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+      }
+
+      .inputText {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        width: 500px;
+        font-weight: bold;
+      }
+
+      .genericButton {
+        padding: 0.5rem;
+        border: 3px solid white;
+        width: fit-content;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      #resultContainer {
+        margin: 2rem 1rem;
+        font-size: 1.3rem;
+        border: 3px solid white;
+        width: 500px;
+        padding: 0.5rem;
+        position: relative;
+      }
+
+      #outputPre {
+        overflow-x: scroll;
+        margin: 0.5rem 0.5rem 0.5rem 0.5rem;
+        font-size: 1rem;
+        padding: 0.2rem;
+      }
+
+      #resultLabel {
+        position: absolute;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        top: -17px;
+        background-color: #010203;
+        padding: 5px;
+      }
+
+      #exampleTid {
+        cursor: pointer;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Clickstream JSON Generator</h1>
+    <p>
+      Generates clickstream event data in JSON format for easy pasting in AWS
+      DynamoDB "Create item" screen.
+    </p>
+    <p>
+      To generate the JSON, provide a valid Transcript ID and click GENERATE.
+      The generator will use the current date time as a timestamp and randomly
+      generate a Session ID.
+    </p>
+    <p>
+      Double-click to copy example TID:
+      <span id="exampleTid">7927eb8c5ba0dc207382addab3eec54f57a9d96a</span>
+    </p>
+    <div id="dataEntryForm">
+      <label for="transcriptId" class="inputLabel">Transcript ID</label>
+      <input
+        type="text"
+        id="transcriptId"
+        name="transcriptId"
+        class="inputText"
+      />
+      <div class="genericButton" id="generateButton">GENERATE</div>
+    </div>
+    <div id="resultContainer">
+      <div id="resultLabel">Result JSON</div>
+      <pre id="outputPre">
+{
+    "hello": "world",
+    "test": "data"
+}
+        </pre
+      >
+    </div>
+    <script type="text/javascript">
+      function genHexString(len) {
+        let output = "";
+        for (let i = 0; i < len; ++i) {
+          output += Math.floor(Math.random() * 16).toString(16);
+        }
+        return output;
+      }
+
+      document
+        .getElementById("exampleTid")
+        .addEventListener("dblclick", (e) => {
+          document.getElementById("transcriptId").value = e.target.innerHTML;
+        });
+
+      document
+        .getElementById("generateButton")
+        .addEventListener("click", (e) => {
+          const transcriptId = document.getElementById("transcriptId").value;
+          const transcriptIdPattern = /[0-9a-f]+/;
+
+          if (
+            transcriptId === "" ||
+            !transcriptIdPattern.test(transcriptId) ||
+            transcriptId.length < 40
+          ) {
+            alert(
+              "Please enter a valid Transcript ID with 40 hexadecimal characters"
+            );
+            return;
+          }
+
+          //test TID
+          //7927eb8c5ba0dc207382addab3eec54f57a9d96a
+
+          const sessionId = genHexString(32);
+
+          // construct json
+          const clickstreamObject = {
+            sessionId: {
+              S: sessionId,
+            },
+            timestamp: {
+              S: new Date().toISOString(),
+            },
+            transcriptId: {
+              S: transcriptId,
+            },
+          };
+
+          const stringifiedClickstreamObj = JSON.stringify(
+            clickstreamObject,
+            undefined,
+            2
+          );
+
+          const outputPre = (document.getElementById("outputPre").textContent =
+            stringifiedClickstreamObj);
+        });
+    </script>
+  </body>
+</html>
