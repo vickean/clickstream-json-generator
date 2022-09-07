@@ -131,6 +131,7 @@
 }
         </pre
       >
+      <div class="genericButton" id="copyButton">COPY</div>
     </div>
     <script type="text/javascript">
       function genHexString(len) {
@@ -146,6 +147,12 @@
         .addEventListener("dblclick", (e) => {
           document.getElementById("transcriptId").value = e.target.innerHTML;
         });
+
+      document.getElementById("copyButton").addEventListener("click", (e) => {
+        const jsonData = document.getElementById("outputPre").textContent;
+        navigator.clipboard.writeText(jsonData);
+        alert("Copied to clipboard");
+      });
 
       document
         .getElementById("generateButton")
@@ -179,6 +186,18 @@
             },
             transcriptId: {
               S: transcriptId,
+            },
+            cookie: {
+              S: "ttclid=test_ttclid_1; _ttp=1f452251-72e7-4dd7-9313-f2f77d7bca62;",
+            },
+            ua: {
+              S: "Mozilla/5.0 (Linux; Android 12; M2101K7AG Build/SKQ1.210908.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/104.0.5112.97 Mobile Safari/537.36  trill_250904 JsSdk/1.0 NetType/WIFI Channel/googleplay AppName/trill app_version/25.9.4 ByteLocale/en ByteFullLocale/en Region/MY BytedanceWebview/d8a21c6",
+            },
+            ip: {
+              S: "61.53.32.220",
+            },
+            ruriquery: {
+              S: "?utm_source=tiktok&utm_medium=ocpm&utm_campaign=my-tt-crcd-citi025-prospecting-dpm&ttclid=test_ttclid_1",
             },
           };
 
