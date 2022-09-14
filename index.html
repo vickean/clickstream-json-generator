@@ -65,7 +65,7 @@
         cursor: pointer;
       }
 
-      #resultContainer {
+      .resultContainer {
         margin: 2rem 1rem;
         font-size: 1.3rem;
         border: 3px solid white;
@@ -74,14 +74,14 @@
         position: relative;
       }
 
-      #outputPre {
+      .outputPre {
         overflow-x: scroll;
         margin: 0.5rem 0.5rem 0.5rem 0.5rem;
         font-size: 1rem;
         padding: 0.2rem;
       }
 
-      #resultLabel {
+      .resultLabel {
         position: absolute;
         text-transform: uppercase;
         margin-bottom: 0.5rem;
@@ -94,6 +94,26 @@
       #exampleTid {
         cursor: pointer;
         font-weight: bold;
+      }
+
+      .copyButton {
+        position: absolute;
+        top: -14px;
+        right: 4px;
+        font-size: 1.1rem;
+        background-color: #010203;
+      }
+
+      .alertModal {
+        background-color: #294560;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        padding: 1rem;
+      }
+
+      .modalHide {
+        display: none;
       }
     </style>
   </head>
@@ -109,6 +129,15 @@
       generate a Session ID.
     </p>
     <p>
+      The reason for having 4 different JSON outputs is so that it better mimics
+      the clickstream data that is generated in a Production situation. The
+      timestamps are one second apart from each other with Result JSON 1 having
+      the earliest.
+    </p>
+    <p>
+      <b>FOR A SIMPLE TEST: You can just use Result JSON 3.</b>
+    </p>
+    <p>
       Double-click to copy example TID:
       <span id="exampleTid">7927eb8c5ba0dc207382addab3eec54f57a9d96a</span>
     </p>
@@ -122,17 +151,58 @@
       />
       <div class="genericButton" id="generateButton">GENERATE</div>
     </div>
-    <div id="resultContainer">
-      <div id="resultLabel">Result JSON</div>
-      <pre id="outputPre">
+    <div id="resultContainer" class="resultContainer">
+      <div id="resultLabel" class="resultLabel">Result JSON 1</div>
+      <pre id="outputPre" class="outputPre">
 {
     "hello": "world",
     "test": "data"
 }
         </pre
       >
-      <div class="genericButton" id="copyButton">COPY</div>
+      <div class="genericButton copyButton" id="copyButton">COPY</div>
     </div>
+
+    <div id="resultContainer2" class="resultContainer">
+      <div id="resultLabel2" class="resultLabel">Result JSON 2</div>
+      <pre id="outputPre2" class="outputPre">
+{
+    "hello": "world",
+    "test": "data"
+}
+        </pre
+      >
+      <div class="genericButton copyButton" id="copyButton2">COPY</div>
+    </div>
+
+    <div id="resultContainer3" class="resultContainer">
+      <div id="resultLabel3" class="resultLabel">Result JSON 3</div>
+      <pre id="outputPre3" class="outputPre">
+{
+    "hello": "world",
+    "test": "data"
+}
+        </pre
+      >
+      <div class="genericButton copyButton" id="copyButton3">COPY</div>
+    </div>
+
+    <div id="resultContainer4" class="resultContainer">
+      <div id="resultLabel4" class="resultLabel">Result JSON 4</div>
+      <pre id="outputPre4" class="outputPre">
+{
+    "hello": "world",
+    "test": "data"
+}
+        </pre
+      >
+      <div class="genericButton copyButton" id="copyButton4">COPY</div>
+    </div>
+
+    <div class="alertModal modalHide" id="info-modal">
+      TEST! Stuff has been copied to the clipboard.
+    </div>
+
     <script type="text/javascript">
       function genHexString(len) {
         let output = "";
@@ -151,7 +221,25 @@
       document.getElementById("copyButton").addEventListener("click", (e) => {
         const jsonData = document.getElementById("outputPre").textContent;
         navigator.clipboard.writeText(jsonData);
-        alert("Copied to clipboard");
+        displayModal("Result JSON 1 copied to clipboard", 2000);
+      });
+
+      document.getElementById("copyButton2").addEventListener("click", (e) => {
+        const jsonData = document.getElementById("outputPre2").textContent;
+        navigator.clipboard.writeText(jsonData);
+        displayModal("Result JSON 2 copied to clipboard", 2000);
+      });
+
+      document.getElementById("copyButton3").addEventListener("click", (e) => {
+        const jsonData = document.getElementById("outputPre3").textContent;
+        navigator.clipboard.writeText(jsonData);
+        displayModal("Result JSON 3 copied to clipboard", 2000);
+      });
+
+      document.getElementById("copyButton4").addEventListener("click", (e) => {
+        const jsonData = document.getElementById("outputPre4").textContent;
+        navigator.clipboard.writeText(jsonData);
+        displayModal("Result JSON 4 copied to clipboard", 2000);
       });
 
       document
@@ -176,41 +264,89 @@
 
           const sessionId = genHexString(32);
           const ttclid = genHexString(6);
+          const time1 = new Date();
+          const time2 = new Date(time1.getTime() + 1000);
+          const time3 = new Date(time2.getTime() + 1000);
+          const time4 = new Date(time3.getTime() + 1000);
 
-          // construct json
-          const clickstreamObject = {
-            sessionId: {
-              S: sessionId,
-            },
-            timestamp: {
-              S: new Date().toISOString(),
-            },
-            transcriptId: {
-              S: transcriptId,
-            },
-            cookie: {
-              S: `ttclid=test_ttclid_${ttclid}; _ttp=1f452251-72e7-4dd7-9313-f2f77d${ttclid};`,
-            },
-            ua: {
-              S: "Mozilla/5.0 (Linux; Android 12; M2101K7AG Build/SKQ1.210908.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/104.0.5112.97 Mobile Safari/537.36  trill_250904 JsSdk/1.0 NetType/WIFI Channel/googleplay AppName/trill app_version/25.9.4 ByteLocale/en ByteFullLocale/en Region/MY BytedanceWebview/d8a21c6",
-            },
-            ip: {
-              S: "61.53.32.220",
-            },
-            ruriquery: {
-              S: `?utm_source=tiktok&utm_medium=ocpm&utm_campaign=my-tt-crcd-citi025-prospecting-dpm&ttclid=test_ttclid_${ttclid}`,
-            },
+          const generateFullCSObj = (sessionId, timeObj, ttlcid) => {
+            // construct json
+            const clickstreamObject = {
+              sessionId: {
+                S: sessionId,
+              },
+              timestamp: {
+                S: timeObj.toISOString(),
+              },
+              transcriptId: {
+                S: transcriptId,
+              },
+              cookie: {
+                S: `ttclid=test_ttclid_${ttclid}; _ttp=1f452251-72e7-4dd7-9313-f2f77d${ttclid};`,
+              },
+              ua: {
+                S: "Mozilla/5.0 (Linux; Android 12; M2101K7AG Build/SKQ1.210908.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/104.0.5112.97 Mobile Safari/537.36  trill_250904 JsSdk/1.0 NetType/WIFI Channel/googleplay AppName/trill app_version/25.9.4 ByteLocale/en ByteFullLocale/en Region/MY BytedanceWebview/d8a21c6",
+              },
+              ip: {
+                S: "61.53.32.220",
+              },
+              ruriquery: {
+                S: `?utm_source=tiktok&utm_medium=ocpm&utm_campaign=my-tt-crcd-citi025-prospecting-dpm&ttclid=test_ttclid_${ttclid}`,
+              },
+            };
+
+            return clickstreamObject;
           };
 
-          const stringifiedClickstreamObj = JSON.stringify(
-            clickstreamObject,
-            undefined,
-            2
-          );
+          const generateSimpleCSObj = (sessionId, timeObj) => {
+            const clickstreamObjectSimple = {
+              sessionId: {
+                S: sessionId,
+              },
+              timestamp: {
+                S: timeObj.toISOString(),
+              },
+              ua: {
+                S: "Mozilla/5.0 (Linux; Android 12; M2101K7AG Build/SKQ1.210908.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/104.0.5112.97 Mobile Safari/537.36  trill_250904 JsSdk/1.0 NetType/WIFI Channel/googleplay AppName/trill app_version/25.9.4 ByteLocale/en ByteFullLocale/en Region/MY BytedanceWebview/d8a21c6",
+              },
+              ip: {
+                S: "61.53.32.220",
+              },
+            };
 
-          const outputPre = (document.getElementById("outputPre").textContent =
-            stringifiedClickstreamObj);
+            return clickstreamObjectSimple;
+          };
+
+          const stringifyWrite = (target, csObj) => {
+            //  write to 1st pre
+            const stringifiedClickstreamObj = JSON.stringify(
+              csObj,
+              undefined,
+              2
+            );
+
+            const outputPre = (document.getElementById(target).textContent =
+              stringifiedClickstreamObj);
+          };
+
+          //  write to pre
+          stringifyWrite("outputPre", generateSimpleCSObj(sessionId, time1));
+          stringifyWrite("outputPre2", generateSimpleCSObj(sessionId, time2));
+          stringifyWrite(
+            "outputPre3",
+            generateFullCSObj(sessionId, time3, ttclid)
+          );
+          stringifyWrite("outputPre4", generateSimpleCSObj(sessionId, time4));
         });
+
+      const displayModal = (text, duration) => {
+        const modal = document.getElementById("info-modal");
+        modal.innerHTML = text;
+        modal.classList.remove("modalHide");
+        setTimeout(() => {
+          modal.classList.add("modalHide");
+        }, duration);
+      };
     </script>
   </body>
 </html>
