@@ -104,16 +104,19 @@
         background-color: #010203;
       }
 
-      .alertModal {
-        background-color: #294560;
+      #alertContainer {
         position: fixed;
         top: 10px;
         left: 10px;
-        padding: 1rem;
+        display: flex;
+        flex-direction: column-reverse;
       }
 
-      .modalHide {
-        display: none;
+      .alertItem {
+        background-color: #294560;
+        padding: 1rem;
+        margin: 0.5rem;
+        width: 25rem;
       }
     </style>
   </head>
@@ -199,9 +202,7 @@
       <div class="genericButton copyButton" id="copyButton4">COPY</div>
     </div>
 
-    <div class="alertModal modalHide" id="info-modal">
-      TEST! Stuff has been copied to the clipboard.
-    </div>
+    <div id="alertContainer"></div>
 
     <script type="text/javascript">
       function genHexString(len) {
@@ -216,30 +217,31 @@
         .getElementById("exampleTid")
         .addEventListener("dblclick", (e) => {
           document.getElementById("transcriptId").value = e.target.innerHTML;
+          createAlert("Using example TID", 3000);
         });
 
       document.getElementById("copyButton").addEventListener("click", (e) => {
         const jsonData = document.getElementById("outputPre").textContent;
         navigator.clipboard.writeText(jsonData);
-        displayModal("Result JSON 1 copied to clipboard", 2000);
+        createAlert("Result JSON 1 copied to clipboard", 3000);
       });
 
       document.getElementById("copyButton2").addEventListener("click", (e) => {
         const jsonData = document.getElementById("outputPre2").textContent;
         navigator.clipboard.writeText(jsonData);
-        displayModal("Result JSON 2 copied to clipboard", 2000);
+        createAlert("Result JSON 2 copied to clipboard", 3000);
       });
 
       document.getElementById("copyButton3").addEventListener("click", (e) => {
         const jsonData = document.getElementById("outputPre3").textContent;
         navigator.clipboard.writeText(jsonData);
-        displayModal("Result JSON 3 copied to clipboard", 2000);
+        createAlert("Result JSON 3 copied to clipboard", 3000);
       });
 
       document.getElementById("copyButton4").addEventListener("click", (e) => {
         const jsonData = document.getElementById("outputPre4").textContent;
         navigator.clipboard.writeText(jsonData);
-        displayModal("Result JSON 4 copied to clipboard", 2000);
+        createAlert("Result JSON 4 copied to clipboard", 3000);
       });
 
       document
@@ -253,8 +255,10 @@
             !transcriptIdPattern.test(transcriptId) ||
             transcriptId.length < 40
           ) {
-            alert(
-              "Please enter a valid Transcript ID with 40 hexadecimal characters"
+            createAlert(
+              "Please enter a valid Transcript ID with 40 hexadecimal characters",
+              3000,
+              "error"
             );
             return;
           }
@@ -337,14 +341,22 @@
             generateFullCSObj(sessionId, time3, ttclid)
           );
           stringifyWrite("outputPre4", generateSimpleCSObj(sessionId, time4));
+
+          createAlert("JSON Generated", 3000, "success");
         });
 
-      const displayModal = (text, duration) => {
-        const modal = document.getElementById("info-modal");
-        modal.innerHTML = text;
-        modal.classList.remove("modalHide");
+      const createAlert = (text, duration, type = "info") => {
+        const container = document.getElementById("alertContainer");
+        const newAlert = document.createElement("div");
+        const alertId = "alert" + genHexString(6);
+        newAlert.className = "alertItem";
+        newAlert.id = alertId;
+        newAlert.innerHTML = text;
+        if (type === "error") newAlert.style.backgroundColor = "#602929";
+        if (type === "success") newAlert.style.backgroundColor = "#29602a";
+        container.appendChild(newAlert);
         setTimeout(() => {
-          modal.classList.add("modalHide");
+          document.getElementById(alertId).remove();
         }, duration);
       };
     </script>
